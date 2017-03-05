@@ -87,8 +87,8 @@ class PlaceTableViewController: UITableViewController {
             // Add a new meal.
             let newIndexPath = IndexPath(row: places.count, section: 0)
             places.append(place)
+            savePlaces()
             tableView.insertRows(at: [newIndexPath], with: .automatic)
-            
         }
     }
     

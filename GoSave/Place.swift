@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import GoogleMaps
 import os.log
 
 class Place: NSObject, NSCoding {
@@ -70,7 +71,35 @@ class Place: NSObject, NSCoding {
     }
     
     //MARK: Maps function
-    func askGoogleForRoute(sourceCoordinate: CLLocationCoordinate2D) {
+    func askGoogleForRoute(sourceCoordinate: CLLocationCoordinate2D, processPath: @escaping (_ path: GMSPath) -> Void) {
+        //https://maps.googleapis.com/maps/api/directions/json?origin=Boston,MA&destination=Concord,MA&waypoints=Charlestown,MA|Lexington,MA&key=AIzaSyAVSznAZ0UJXFiDLNLJfN_rBajYLYnKV94
+        var directionURL = URLComponents(string: "https://maps.googleapis.com/maps/api/directions/json")
+        let originQuery = URLQueryItem(name: "origin", value: "\(sourceCoordinate.latitude),\(sourceCoordinate.longitude)")
+        let placeCoordinate = self.location.coordinate
+        let destinationQuery = URLQueryItem(name: "destination", value: "\(placeCoordinate.latitude),\(placeCoordinate.longitude)")
+        let keyQuery = URLQueryItem(name: "key", value: "AIzaSyAVSznAZ0UJXFiDLNLJfN_rBajYLYnKV94")
+        directionURL?.queryItems = [originQuery, destinationQuery, keyQuery]
+        let url = directionURL?.url
+        let task = URLSession.shared.dataTask(with: url!, completionHandler: { (data, response, error) in
+            if error == nil {
+                do {
+                    let data = try JSONSerialization.jsonObject(with: data!, options: .allowFragments) as! [String:Any]
+                    let routes = data["routes"] as! [[String:Any]]
+                    let overviewPolyline = routes[0]["overview_polyline"] as! [String:String]
+                    let encodedPolyline = overviewPolyline["points"]
+                    let path = GMSPath(fromEncodedPath: encodedPolyline!)
+                    processPath(path!)
+                } catch {
+                    fatalError("Error asking google for direction")
+                }
+            } else {
+                fatalError("Error api call asking google for direction")
+            }
+        
+        })
+        
+        task.resume()
+        
 //        let dataURL = URL(string: "https://foodeals.herokuapp.com/deal_items")!
 //        let task = URLSession.shared.dataTask(with: dataURL, completionHandler: { (data, response, error) in
 //            if error == nil {

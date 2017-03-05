@@ -27,7 +27,8 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         locationmgr.requestWhenInUseAuthorization()
         nameTextField.delegate = self
         location = locationmgr.location
-        updateSaveButtonState()
+//        updateSaveButtonState()
+        getAddressForLocation(location: location!)
     }
 
     override func didReceiveMemoryWarning() {
@@ -50,10 +51,19 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
             return
         }
         
-        let name = nameTextField.text ?? ""
+        var name = nameTextField.text
+        if name == nil || name == "" {
+            name = nameTextField.placeholder ?? ""
+        }
+        
         let photo = photoImageView.image
         if let location = location {
-            place = Place(name: name, photo: photo, location: location)
+            if let place = Place(name: name!, photo: photo, location: location) {
+                self.place = place
+            } else {
+                fatalError("Cannot init place")
+            }
+            
         }
         else {
             fatalError("Problem with location")
@@ -94,7 +104,8 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         return true
     }
     func textFieldDidEndEditing(_ textField: UITextField) {
-        updateSaveButtonState()
+//        updateSaveButtonState()
+        saveButton.isEnabled = true
         
     }
     
@@ -125,8 +136,22 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
     //MARK: Private Methods
     private func updateSaveButtonState() {
         // Disable the Save button if the text field is empty.
-        let text = nameTextField.text ?? ""
-        saveButton.isEnabled = !text.isEmpty
+//        let text = nameTextField.text ?? ""
+//        saveButton.isEnabled = !text.isEmpty
+    }
+    
+    private func getAddressForLocation(location: CLLocation) {
+        CLGeocoder().reverseGeocodeLocation(location, completionHandler:
+            {(placemarks, error) in
+                if error != nil {
+                    os_log("reverse geodcode fail", type: .debug)
+                } else {
+                    let pm = placemarks! as [CLPlacemark]
+                    if pm.count > 0 {
+                        self.nameTextField.placeholder = pm[0].name
+                    }
+                }
+        })
     }
 
 }
