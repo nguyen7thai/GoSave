@@ -16,11 +16,13 @@ class Place: NSObject, NSCoding {
     var name: String
     var photo: UIImage?
     var location: CLLocation
+    var placeDescription: String?
     
     struct PropertyKey {
         static let name = "name"
         static let photo = "photo"
         static let location = "location"
+        static let placeDescription = "placeDescription"
     }
     
     //MARK: Archiving Paths
@@ -31,7 +33,7 @@ class Place: NSObject, NSCoding {
     
     //MARK: Initialization
     
-    init?(name: String, photo: UIImage?, location: CLLocation) {
+    init?(name: String, photo: UIImage?, location: CLLocation, placeDescription: String?) {
         
         // The name must not be empty
         guard !name.isEmpty else {
@@ -42,11 +44,20 @@ class Place: NSObject, NSCoding {
         self.name = name
         self.photo = photo
         self.location = location
+        self.placeDescription = placeDescription
     }
     
-    init?(photo: UIImage?, location: CLLocation) {
-        self.name = "Auto Generated"
-        self.photo = photo
+    init?(placeMark: CLPlacemark, location: CLLocation) {
+        self.name = placeMark.name!
+        var description = ""
+        description += "Address: \(placeMark.name!)\n"
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yyyy HH:mm"
+        let currentTime = formatter.string(from: Date())
+        description += "Saved Time: \(currentTime)\n"
+        self.placeDescription = description
+        let defaultImage = UIImage(named: "DefaultImage")
+        self.photo = defaultImage
         self.location = location
     }
     
@@ -55,6 +66,7 @@ class Place: NSObject, NSCoding {
         aCoder.encode(name, forKey: PropertyKey.name)
         aCoder.encode(photo, forKey: PropertyKey.photo)
         aCoder.encode(location, forKey: PropertyKey.location)
+        aCoder.encode(placeDescription, forKey: PropertyKey.placeDescription)
     }
     
     required convenience init?(coder aDecoder: NSCoder) {
@@ -66,8 +78,9 @@ class Place: NSObject, NSCoding {
         
         let photo = aDecoder.decodeObject(forKey: PropertyKey.photo) as? UIImage
         let location = aDecoder.decodeObject(forKey: PropertyKey.location) as? CLLocation
+        let placeDescription = aDecoder.decodeObject(forKey: PropertyKey.placeDescription) as? String
         // Must call designated initializer.
-        self.init(name: name, photo: photo, location: location!)
+        self.init(name: name, photo: photo, location: location!, placeDescription: placeDescription)
     }
     
     //MARK: Maps function
@@ -99,26 +112,19 @@ class Place: NSObject, NSCoding {
         })
         
         task.resume()
-        
-//        let dataURL = URL(string: "https://foodeals.herokuapp.com/deal_items")!
-//        let task = URLSession.shared.dataTask(with: dataURL, completionHandler: { (data, response, error) in
-//            if error == nil {
-//                do {
-//                    let data = try JSONSerialization.jsonObject(with: data!, options: .allowFragments)
-//                    let dealItemsRaw = data["deal_items"] as! [[String:AnyObject]]
-//                    var dealItems = [DealItem]()
-//                    for dict in dealItemsRaw {
-//                        dealItems.append(DealItem(dict: dict))
-//                    }
-//                    handler(dealItems, nil)
-//                } catch {
-//                    handler(nil, NSError(domain: "getDeals", code: 1, userInfo: nil))
-//                }
-//            } else {
-//                handler(nil, error as NSError?)
-//            }
-//            
-//        })
-//        task.resume()
+    }
+    
+    static func getAddressForLocation(location: CLLocation, handler: @escaping (_ placeMark: CLPlacemark) -> Void) {
+        CLGeocoder().reverseGeocodeLocation(location, completionHandler:
+            {(placemarks, error) in
+                if error != nil {
+                    os_log("reverse geodcode fail", type: .debug)
+                } else {
+                    let pm = placemarks! as [CLPlacemark]
+                    if pm.count > 0 {
+                        handler(pm[0])
+                    }
+                }
+        })
     }
 }

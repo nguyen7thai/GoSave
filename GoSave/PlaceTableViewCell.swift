@@ -11,6 +11,7 @@ import UIKit
 class PlaceTableViewCell: UITableViewCell {
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var photoImageView: UIImageView!
+    @IBOutlet weak var placeDescriptionLabel: UILabel!
 
     override func awakeFromNib() {
         super.awakeFromNib()

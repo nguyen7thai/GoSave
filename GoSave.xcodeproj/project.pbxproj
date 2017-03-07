@@ -15,6 +15,7 @@
 		874F01191E656DC000807B8B /* Place.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874F01181E656DC000807B8B /* Place.swift */; };
 		874F011B1E656F8500807B8B /* PlaceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874F011A1E656F8500807B8B /* PlaceTableViewCell.swift */; };
 		874F011D1E6579AA00807B8B /* AddPlaceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 874F011C1E6579AA00807B8B /* AddPlaceViewController.swift */; };
+		8772CEB91E6EBD8B00B73765 /* NoLocationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8772CEB81E6EBD8B00B73765 /* NoLocationViewController.swift */; };
 		877322271E667E2C00A35C30 /* PlaceDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 877322261E667E2C00A35C30 /* PlaceDetailViewController.swift */; };
 		877322291E66CFD700A35C30 /* mylocation.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 877322281E66CFD700A35C30 /* mylocation.gpx */; };
 		8773222B1E66D02000A35C30 /* docdoc.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 8773222A1E66D02000A35C30 /* docdoc.gpx */; };
@@ -33,6 +34,7 @@
 		874F01181E656DC000807B8B /* Place.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Place.swift; sourceTree = "<group>"; };
 		874F011A1E656F8500807B8B /* PlaceTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaceTableViewCell.swift; sourceTree = "<group>"; };
 		874F011C1E6579AA00807B8B /* AddPlaceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddPlaceViewController.swift; sourceTree = "<group>"; };
+		8772CEB81E6EBD8B00B73765 /* NoLocationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoLocationViewController.swift; sourceTree = "<group>"; };
 		877322261E667E2C00A35C30 /* PlaceDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlaceDetailViewController.swift; sourceTree = "<group>"; };
 		877322281E66CFD700A35C30 /* mylocation.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = mylocation.gpx; sourceTree = "<group>"; };
 		8773222A1E66D02000A35C30 /* docdoc.gpx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = docdoc.gpx; sourceTree = "<group>"; };
@@ -94,6 +96,7 @@
 				874F01121E652F1200807B8B /* Info.plist */,
 				874F01181E656DC000807B8B /* Place.swift */,
 				874F011A1E656F8500807B8B /* PlaceTableViewCell.swift */,
+				8772CEB81E6EBD8B00B73765 /* NoLocationViewController.swift */,
 			);
 			path = GoSave;
 			sourceTree = "<group>";
@@ -247,6 +250,7 @@
 				877322271E667E2C00A35C30 /* PlaceDetailViewController.swift in Sources */,
 				87C5B24F1E6838B10004A08D /* ViewController.swift in Sources */,
 				874F01071E652F1200807B8B /* AppDelegate.swift in Sources */,
+				8772CEB91E6EBD8B00B73765 /* NoLocationViewController.swift in Sources */,
 				874F011B1E656F8500807B8B /* PlaceTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

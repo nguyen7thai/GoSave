@@ -14,6 +14,8 @@ class PlaceDetailViewController: UIViewController, CLLocationManagerDelegate {
     
     @IBOutlet weak var nameLabelField: UILabel!
     @IBOutlet weak var photoImageView: UIImageView!
+    @IBOutlet weak var placeDescriptionLabel: UILabel!
+
     let locationmgr = CLLocationManager()
     
     var place: Place?
@@ -29,6 +31,7 @@ class PlaceDetailViewController: UIViewController, CLLocationManagerDelegate {
 
         if let place = place {
             nameLabelField.text = place.name
+            placeDescriptionLabel.text = place.placeDescription
             photoImageView.image = place.photo
             
             let location = place.location

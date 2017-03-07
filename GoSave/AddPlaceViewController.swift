@@ -15,6 +15,7 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
     //MARK: Properties
     @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var nameTextField: UITextField!
+    @IBOutlet weak var descriptionTextView: UITextView!
     var place: Place?
     let geocoder = CLGeocoder()
     let locationmgr = CLLocationManager()
@@ -27,8 +28,22 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         locationmgr.requestWhenInUseAuthorization()
         nameTextField.delegate = self
         location = locationmgr.location
-//        updateSaveButtonState()
-        getAddressForLocation(location: location!)
+        getAddressForLocation(location: location!, handler: {(placeMark: CLPlacemark) in
+            self.nameTextField.placeholder = placeMark.name
+            var description = ""
+            description += "Address: \(placeMark.name)\n"
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yyyy HH:mm"
+            let currentTime = formatter.string(from: Date())
+            description += "Saved Time: \(currentTime)\n"
+            self.descriptionTextView.text = description
+        })
+        
+        nameTextField.layer.shadowOffset = CGSize(width: 0, height: -4)
+        nameTextField.layer.shadowColor = UIColor.red.cgColor
+        nameTextField.layer.shadowOpacity = 0.4
+        nameTextField.layer.shadowRadius = 5
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -57,8 +72,9 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         }
         
         let photo = photoImageView.image
+        let description = descriptionTextView.text
         if let location = location {
-            if let place = Place(name: name!, photo: photo, location: location) {
+            if let place = Place(name: name!, photo: photo, location: location, placeDescription: description) {
                 self.place = place
             } else {
                 fatalError("Cannot init place")
@@ -98,6 +114,8 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         }
     }
     
+    
+    
     //MARK: UITextFieldDelegate
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         nameTextField.resignFirstResponder()
@@ -134,13 +152,7 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
     }
 
     //MARK: Private Methods
-    private func updateSaveButtonState() {
-        // Disable the Save button if the text field is empty.
-//        let text = nameTextField.text ?? ""
-//        saveButton.isEnabled = !text.isEmpty
-    }
-    
-    private func getAddressForLocation(location: CLLocation) {
+    private func getAddressForLocation(location: CLLocation, handler: @escaping (_ placeMark: CLPlacemark) -> Void) {
         CLGeocoder().reverseGeocodeLocation(location, completionHandler:
             {(placemarks, error) in
                 if error != nil {
@@ -148,7 +160,7 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
                 } else {
                     let pm = placemarks! as [CLPlacemark]
                     if pm.count > 0 {
-                        self.nameTextField.placeholder = pm[0].name
+                        handler(pm[0])
                     }
                 }
         })

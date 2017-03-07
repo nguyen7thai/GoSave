@@ -8,10 +8,12 @@
 
 import UIKit
 import os.log
+import MapKit
 
 class PlaceTableViewController: UITableViewController {
     //MARK: Properties
     var places = [Place]()
+    let locationmgr = CLLocationManager()
     
     //MARK: Private Methods
     private func loadSamplePlace() {
@@ -62,7 +64,14 @@ class PlaceTableViewController: UITableViewController {
         let place = places[indexPath.row]
         
         cell.nameLabel.text = place.name
+        if let description = place.placeDescription {
+            cell.placeDescriptionLabel.text = description
+        } else {
+            cell.placeDescriptionLabel.text = ""
+        }
         cell.photoImageView.image = place.photo
+        cell.photoImageView.layer.cornerRadius = 23
+        cell.photoImageView.layer.masksToBounds = true
         
         return cell
     }
@@ -89,6 +98,24 @@ class PlaceTableViewController: UITableViewController {
             places.append(place)
             savePlaces()
             tableView.insertRows(at: [newIndexPath], with: .automatic)
+        }
+    }
+    @IBAction func addPlace(_ sender: UIBarButtonItem) {
+        if let location = locationmgr.location {
+            Place.getAddressForLocation(location: location, handler: {(placeMark: CLPlacemark) in
+                if let draftPlace = Place(placeMark: placeMark, location: location) {
+                    let newIndexPath = IndexPath(row: self.places.count, section: 0)
+                    self.places.append(draftPlace)
+                    self.savePlaces()
+                    self.tableView.insertRows(at: [newIndexPath], with: .automatic)
+                } else {
+                    fatalError("Error when init Draft Place")
+                }
+            })
+        } else {
+            let vc = (storyboard?.instantiateViewController(
+                withIdentifier: "NoLocation"))!
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
     
