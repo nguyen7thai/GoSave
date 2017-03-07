@@ -14,6 +14,7 @@ class PlaceTableViewController: UITableViewController {
     //MARK: Properties
     var places = [Place]()
     let locationmgr = CLLocationManager()
+    var selectedPlace: Place?
     
     //MARK: Private Methods
     private func loadSamplePlace() {
@@ -140,12 +141,20 @@ class PlaceTableViewController: UITableViewController {
                 fatalError("The selected cell is not being displayed by the table")
             }
             
-            let selectedPlace = places[indexPath.row]
+            self.selectedPlace = places[indexPath.row]
             savePlaces()
-            placeDetailViewController.place = selectedPlace
+            placeDetailViewController.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(openEditPlaceControllerView))
+            placeDetailViewController.place = self.selectedPlace
         default:
             fatalError("Unexpected Segue Identifier; \(segue.identifier)")
         }
+    }
+    
+    // Mark: Private functions
+    func openEditPlaceControllerView(button: UIBarButtonItem) {
+        let viewController = self.storyboard!.instantiateViewController(withIdentifier: "EditPlaceController") as! AddPlaceViewController
+        viewController.place = self.selectedPlace!
+        present(viewController, animated: true, completion: nil)
     }
 
     

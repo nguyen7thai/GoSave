@@ -17,32 +17,19 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var descriptionTextView: UITextView!
     var place: Place?
-    let geocoder = CLGeocoder()
-    let locationmgr = CLLocationManager()
-    var location: CLLocation?
 
     @IBOutlet weak var saveButton: UIBarButtonItem!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        locationmgr.requestWhenInUseAuthorization()
         nameTextField.delegate = self
-        location = locationmgr.location
-        getAddressForLocation(location: location!, handler: {(placeMark: CLPlacemark) in
-            self.nameTextField.placeholder = placeMark.name
-            var description = ""
-            description += "Address: \(placeMark.name)\n"
-            let formatter = DateFormatter()
-            formatter.dateFormat = "dd/MM/yyyy HH:mm"
-            let currentTime = formatter.string(from: Date())
-            description += "Saved Time: \(currentTime)\n"
-            self.descriptionTextView.text = description
-        })
-        
-        nameTextField.layer.shadowOffset = CGSize(width: 0, height: -4)
-        nameTextField.layer.shadowColor = UIColor.red.cgColor
-        nameTextField.layer.shadowOpacity = 0.4
-        nameTextField.layer.shadowRadius = 5
+        if let place = self.place {
+            nameTextField.text = place.name
+            photoImageView.image = place.photo
+            descriptionTextView.text = place.placeDescription
+        } else {
+            fatalError("No Place to Edit")
+        }
         
     }
 
@@ -73,17 +60,15 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         
         let photo = photoImageView.image
         let description = descriptionTextView.text
-        if let location = location {
-            if let place = Place(name: name!, photo: photo, location: location, placeDescription: description) {
-                self.place = place
-            } else {
-                fatalError("Cannot init place")
-            }
-            
+        if let place = self.place {
+            place.photo = photo
+            place.name = name!
+            place.placeDescription = description
+            self.place = place
+        } else {
+            fatalError("No Place To Edit")
         }
-        else {
-            fatalError("Problem with location")
-        }
+
     }
     
     
@@ -105,8 +90,8 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
     }
         
     @IBAction func cancel(_ sender: UIBarButtonItem) {
-        let isPresentingInAddMealMode = presentingViewController is UINavigationController
-        if isPresentingInAddMealMode {
+        let isPresentingInEditPlaceMode = presentingViewController is UINavigationController
+        if isPresentingInEditPlaceMode {
             dismiss(animated: true, completion: nil)
         }
         else {
