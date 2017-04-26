@@ -38,7 +38,8 @@ class PlaceTableViewController: UITableViewController {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? PlaceTableViewCell  else {
             fatalError("The dequeued cell is not an instance of PlaceTableViewCell.")
         }
-        let place = places[indexPath.row]
+        let total = places.count
+        let place = places[total - 1 - indexPath.row]
         
         cell.nameLabel.text = place.name
         if let description = place.placeDescription {
@@ -85,7 +86,7 @@ class PlaceTableViewController: UITableViewController {
         if let location = locationmgr.location {
             Place.getAddressForLocation(location: location, handler: {(placeMark: CLPlacemark) in
                 if let draftPlace = Place(placeMark: placeMark, location: location) {
-                    let newIndexPath = IndexPath(row: self.places.count, section: 0)
+                    let newIndexPath = IndexPath(row: 0, section: 0)
                     self.places.append(draftPlace)
                     Place.saveAllPlace(places: self.places)
                     self.tableView.insertRows(at: [newIndexPath], with: .automatic)
@@ -121,9 +122,9 @@ class PlaceTableViewController: UITableViewController {
                 fatalError("The selected cell is not being displayed by the table")
             }
             
-            self.selectedPlaceIndex = indexPath.row
+            self.selectedPlaceIndex = self.places.count - 1 - indexPath.row
             placeDetailViewController.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(openEditPlaceControllerView))
-            placeDetailViewController.placeIndex = indexPath.row
+            placeDetailViewController.placeIndex = self.selectedPlaceIndex
         default:
             fatalError("Unexpected Segue Identifier; \(segue.identifier)")
         }
@@ -149,7 +150,7 @@ class PlaceTableViewController: UITableViewController {
     // Mark: Private functions
     func openEditPlaceControllerView(button: UIBarButtonItem) {
         let viewController = self.storyboard!.instantiateViewController(withIdentifier: "EditPlaceController") as! EditPlaceViewController
-        viewController.placeIndex = self.selectedPlaceIndex!
+        viewController.placeIndex =  self.selectedPlaceIndex!
         present(viewController, animated: true, completion: nil)
     }
 
