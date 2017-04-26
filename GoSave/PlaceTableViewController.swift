@@ -14,38 +14,14 @@ class PlaceTableViewController: UITableViewController {
     //MARK: Properties
     var places = [Place]()
     let locationmgr = CLLocationManager()
-    var selectedPlace: Place?
+    var selectedPlaceIndex: Int?
     
     //MARK: Private Methods
-    private func loadSamplePlace() {
-        /*
-        let photo1 = UIImage(named: "DefaultImage")
-        guard let place1 = Place(name: "Place 1", photo: photo1) else {
-            fatalError("Unable to instantiate place")
-        }
-        guard let place2 = Place(name: "Place 2", photo: photo1) else {
-            fatalError("Unable to instantiate place")
-        }
-        guard let place3 = Place(name: "Place 3", photo: photo1) else {
-            fatalError("Unable to instantiate place")
-        }
-        places += [place1, place2, place3]
-         */
-        
-    }
     
     private func savePlaces() {
-        let isSuccessfulSave = NSKeyedArchiver.archiveRootObject(places, toFile: Place.ArchiveURL.path)
-        if isSuccessfulSave {
-            os_log("Place successfully saved.", log: OSLog.default, type: .debug)
-        } else {
-            os_log("Failed to save Place...", log: OSLog.default, type: .error)
-        }
+        Place.saveAllPlace()
     }
     
-    private func loadPlaces() -> [Place]? {
-        return NSKeyedUnarchiver.unarchiveObject(withFile: Place.ArchiveURL.path) as? [Place]
-    }
     
     // MARK: - Table view data source
     
@@ -76,14 +52,26 @@ class PlaceTableViewController: UITableViewController {
         
         return cell
     }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            // Delete the row from the data source
+            self.places.remove(at: indexPath.row)
+            Place.saveAllPlace(places: self.places)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        } else if editingStyle == .insert {
+            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadSamplePlace()
         // Do any additional setup after loading the view, typically from a nib.
-        if let savedPlaces = loadPlaces() {
-            places += savedPlaces
-        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        places = Place.savedPlaces
+        self.tableView.reloadData()
     }
 
     override func didReceiveMemoryWarning() {
@@ -92,22 +80,14 @@ class PlaceTableViewController: UITableViewController {
     }
 
     //MARK: Actions
-    @IBAction func unwindToPlaceList(sender: UIStoryboardSegue) {
-        if let sourceViewController = sender.source as? AddPlaceViewController, let place = sourceViewController.place {
-            // Add a new meal.
-            let newIndexPath = IndexPath(row: places.count, section: 0)
-            places.append(place)
-            savePlaces()
-            tableView.insertRows(at: [newIndexPath], with: .automatic)
-        }
-    }
+ 
     @IBAction func addPlace(_ sender: UIBarButtonItem) {
         if let location = locationmgr.location {
             Place.getAddressForLocation(location: location, handler: {(placeMark: CLPlacemark) in
                 if let draftPlace = Place(placeMark: placeMark, location: location) {
                     let newIndexPath = IndexPath(row: self.places.count, section: 0)
                     self.places.append(draftPlace)
-                    self.savePlaces()
+                    Place.saveAllPlace(places: self.places)
                     self.tableView.insertRows(at: [newIndexPath], with: .automatic)
                 } else {
                     fatalError("Error when init Draft Place")
@@ -141,19 +121,35 @@ class PlaceTableViewController: UITableViewController {
                 fatalError("The selected cell is not being displayed by the table")
             }
             
-            self.selectedPlace = places[indexPath.row]
-            savePlaces()
+            self.selectedPlaceIndex = indexPath.row
             placeDetailViewController.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(openEditPlaceControllerView))
-            placeDetailViewController.place = self.selectedPlace
+            placeDetailViewController.placeIndex = indexPath.row
         default:
             fatalError("Unexpected Segue Identifier; \(segue.identifier)")
         }
     }
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        switch(identifier) {
+        case "ShowDetail":
+            if locationmgr.location != nil {
+                return true
+            } else {
+                let vc = (storyboard?.instantiateViewController(
+                    withIdentifier: "NoLocation"))!
+                self.navigationController?.pushViewController(vc, animated: true)
+                return false
+            }
+        default :
+            return true
+        }
+    }
+    
+
     
     // Mark: Private functions
     func openEditPlaceControllerView(button: UIBarButtonItem) {
-        let viewController = self.storyboard!.instantiateViewController(withIdentifier: "EditPlaceController") as! AddPlaceViewController
-        viewController.place = self.selectedPlace!
+        let viewController = self.storyboard!.instantiateViewController(withIdentifier: "EditPlaceController") as! EditPlaceViewController
+        viewController.placeIndex = self.selectedPlaceIndex!
         present(viewController, animated: true, completion: nil)
     }
 

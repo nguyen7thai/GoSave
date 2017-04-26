@@ -18,6 +18,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         GMSServices.provideAPIKey("AIzaSyAVSznAZ0UJXFiDLNLJfN_rBajYLYnKV94")
+        if let places = NSKeyedUnarchiver.unarchiveObject(withFile: Place.ArchiveURL.path) as? [Place] {
+            Place.savedPlaces = places
+        }
         return true
     }
 

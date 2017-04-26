@@ -1,5 +1,5 @@
 //
-//  AddPlaceViewController.swift
+//  EditPlaceViewController.swift
 //  GoSave
 //
 //  Created by Thai Nguyen on 2/28/17.
@@ -10,20 +10,23 @@ import UIKit
 import MapKit
 import os.log
 
-class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class EditPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     //MARK: Properties
     @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var descriptionTextView: UITextView!
     var place: Place?
+    var placeIndex: Int?
 
-    @IBOutlet weak var saveButton: UIBarButtonItem!
+    @IBOutlet weak var saveButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         nameTextField.delegate = self
-        if let place = self.place {
+        if let index = self.placeIndex {
+            let place = Place.savedPlaces[index]
+            self.place = place
             nameTextField.text = place.name
             photoImageView.image = place.photo
             descriptionTextView.text = place.placeDescription
@@ -31,46 +34,22 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
             fatalError("No Place to Edit")
         }
         
+        let bottomLine = CALayer()
+        bottomLine.frame = CGRect(x: 0.0, y: nameTextField.frame.height - 1, width: nameTextField.frame.width, height: 1.0)
+        bottomLine.backgroundColor = UIColor(hex: "979797").cgColor
+//        bottomLine.backgroundColor = UIColor.red.cgColor
+        nameTextField.layer.addSublayer(bottomLine)
+        
+    
+        
+//        descriptionTextView.layer.addSublayer(bottomLine)
     }
+    
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-
-    
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-        super.prepare(for: segue, sender: sender)
-        // Configure the destination view controller only when the save button is pressed.
-        guard let button = sender as? UIBarButtonItem, button === saveButton else {
-            os_log("The save button was not pressed, cancelling", log: OSLog.default, type: .debug)
-            return
-        }
-        
-        var name = nameTextField.text
-        if name == nil || name == "" {
-            name = nameTextField.placeholder ?? ""
-        }
-        
-        let photo = photoImageView.image
-        let description = descriptionTextView.text
-        if let place = self.place {
-            place.photo = photo
-            place.name = name!
-            place.placeDescription = description
-            self.place = place
-        } else {
-            fatalError("No Place To Edit")
-        }
-
-    }
-    
     
     //MARK: Actions
     @IBAction func selectPhoto(_ sender: UITapGestureRecognizer) {
@@ -89,16 +68,28 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
 
     }
         
-    @IBAction func cancel(_ sender: UIBarButtonItem) {
-        let isPresentingInEditPlaceMode = presentingViewController is UINavigationController
-        if isPresentingInEditPlaceMode {
-            dismiss(animated: true, completion: nil)
-        }
-        else {
-            fatalError("The AddPlaceViewController is not inside a navigation controller.")
-        }
+    @IBAction func cancel(_ sender: UIButton) {
+        dismiss(animated: true, completion: nil)
     }
     
+    @IBAction func updatePlace(_ sender: UIButton) {
+        var name = nameTextField.text
+        if name == nil || name == "" {
+            name = nameTextField.placeholder ?? ""
+        }
+        
+        let photo = photoImageView.image
+        let description = descriptionTextView.text
+        if let place = self.place {
+            place.photo = photo
+            place.name = name!
+            place.placeDescription = description
+            Place.savePlace(index: self.placeIndex!, place: place)
+        } else {
+            fatalError("No Place To Edit")
+        }
+        dismiss(animated: true, completion: nil)
+    }
     
     
     //MARK: UITextFieldDelegate
@@ -107,7 +98,6 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         return true
     }
     func textFieldDidEndEditing(_ textField: UITextField) {
-//        updateSaveButtonState()
         saveButton.isEnabled = true
         
     }
@@ -134,21 +124,6 @@ class AddPlaceViewController: UIViewController, UITextFieldDelegate, UIImagePick
         
         // Dismiss the picker.
         dismiss(animated: true, completion: nil)
-    }
-
-    //MARK: Private Methods
-    private func getAddressForLocation(location: CLLocation, handler: @escaping (_ placeMark: CLPlacemark) -> Void) {
-        CLGeocoder().reverseGeocodeLocation(location, completionHandler:
-            {(placemarks, error) in
-                if error != nil {
-                    os_log("reverse geodcode fail", type: .debug)
-                } else {
-                    let pm = placemarks! as [CLPlacemark]
-                    if pm.count > 0 {
-                        handler(pm[0])
-                    }
-                }
-        })
     }
 
 }

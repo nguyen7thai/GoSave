@@ -17,7 +17,7 @@ class PlaceDetailViewController: UIViewController, CLLocationManagerDelegate {
     @IBOutlet weak var placeDescriptionLabel: UILabel!
 
     let locationmgr = CLLocationManager()
-    
+    var placeIndex: Int?
     var place: Place?
     var sourceMapItem: MKMapItem?
     var destinationMapItem: MKMapItem?
@@ -28,8 +28,17 @@ class PlaceDetailViewController: UIViewController, CLLocationManagerDelegate {
         locationmgr.desiredAccuracy = kCLLocationAccuracyBest
         locationmgr.startUpdatingLocation()
         locationmgr.delegate = self
-
-        if let place = place {
+        }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        // Draw routes between current location and place location
+        let currentLocation = locationmgr.location!
+        let currentCoordinate = currentLocation.coordinate
+        let places = Place.savedPlaces
+        
+        if let index = placeIndex {
+            let place = places[index]
+            self.place = place
             nameLabelField.text = place.name
             placeDescriptionLabel.text = place.placeDescription
             photoImageView.image = place.photo
@@ -45,14 +54,7 @@ class PlaceDetailViewController: UIViewController, CLLocationManagerDelegate {
             marker.position = location.coordinate
             marker.title = "Place Destination"
             marker.map = mapView
-        }
-}
-    
-    override func viewDidAppear(_ animated: Bool) {
-        // Draw routes between current location and place location
-        let currentLocation = locationmgr.location!
-        let currentCoordinate = currentLocation.coordinate
-        if let place = place {
+            
             place.askGoogleForRoute(sourceCoordinate: currentCoordinate, processPath: { (path: GMSPath) -> Void in
                 DispatchQueue.main.async {
                     let polyLine = GMSPolyline(path: path)
@@ -61,22 +63,13 @@ class PlaceDetailViewController: UIViewController, CLLocationManagerDelegate {
                 }
             })
         }
+
     }
     
     //MARK: CLLocationManagerDelegate
     // Update map when location change
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-//        let currentLocation: CLLocation = locations.last!
-//        let currentMarker = GMSMarker()
-//        currentMarker.position = currentLocation.coordinate
-//        currentMarker.title = "Current Location"
-//        currentMarker.map = mapView
-//        
-//        let path = GMSMutablePath()
-//        path.add(place!.location.coordinate)
-//        path.add(currentLocation.coordinate)
-//        let polyline = GMSPolyline(path: path)
-//        polyline.map = mapView
+
 
     }
 

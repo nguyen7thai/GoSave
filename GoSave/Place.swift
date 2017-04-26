@@ -12,6 +12,29 @@ import GoogleMaps
 import os.log
 
 class Place: NSObject, NSCoding {
+    //MARK: Static Properties
+    static var savedPlaces: [Place] = []
+    
+    //MARK: Public Static Methods
+    static func saveAllPlace() {
+        let isSuccessfulSave = NSKeyedArchiver.archiveRootObject(savedPlaces, toFile: Place.ArchiveURL.path)
+        if isSuccessfulSave {
+            os_log("Place successfully saved.", log: OSLog.default, type: .debug)
+        } else {
+            os_log("Failed to save Place...", log: OSLog.default, type: .error)
+        }
+    }
+    
+    static func saveAllPlace(places: [Place]) {
+        savedPlaces = places
+        saveAllPlace()
+    }
+    
+    static func savePlace(index: Int, place: Place) {
+        savedPlaces[index] = place
+        saveAllPlace()
+    }
+
     //MARK: Properties
     var name: String
     var photo: UIImage?
