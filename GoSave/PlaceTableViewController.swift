@@ -67,6 +67,7 @@ class PlaceTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        locationmgr.requestWhenInUseAuthorization()
         // Do any additional setup after loading the view, typically from a nib.
     }
     
